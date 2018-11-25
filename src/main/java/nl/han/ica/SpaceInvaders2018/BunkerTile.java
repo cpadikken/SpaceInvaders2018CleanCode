@@ -8,23 +8,11 @@ import nl.han.ica.OOPDProcessingEngineHAN.Tile.Tile;
  */
 
 public abstract class BunkerTile extends Tile {
-    /**
-     * Groene sprite, voor als de tile 3 hitpoints heeft (onbeschadigd)
-     */
-    protected Sprite sprite3;
-    /**
-     * Oranje sprite, voor als de tile 2 hitpoints heeft (beschadigd)
-     */
-    protected Sprite sprite2;
-    /**
-     * Rode sprite,  voor als de tile 1 hitpoint heeft (kritiek)
-     */
-    protected Sprite sprite1;
-    
-    /**
-     * Hitpoints van de tile (3 = onbeschadigd, 2 = beschadigd, 1 = kritiek, 0 of lager = gesloopt)
-     */
-	protected int hitPoints;
+ 
+    protected Sprite sprite3; // Groene sprite, voor als de tile 3 hitpoints heeft (onbeschadigd)
+    protected Sprite sprite2; // Oranje sprite, voor als de tile 2 hitpoints heeft (beschadigd)
+    protected Sprite sprite1; // Rode sprite,  voor als de tile 1 hitpoint heeft (kritiek)
+	protected int hitPoints; // Hitpoints van de tile (3 = onbeschadigd, 2 = beschadigd, 1 = kritiek, 0 of lager = gesloopt)
 
 	/**
 	 * Constructor
@@ -35,25 +23,14 @@ public abstract class BunkerTile extends Tile {
         hitPoints = 3;
     }
     
-    /**
-     * Set het aantal hitpoints
-     * @param hitPoints		Nieuw aantal hitpoints
-     */
     public void setHitPoints(int hitPoints) {
     	this.hitPoints=hitPoints;
     }
     
-    /**
-     * Geeft het huidige aantal hitpoints
-     * @return				Huidige hitpoints
-     */
     public int getHitPoints(){
     	return hitPoints;
     }
     
-    /**
-     * Verwisselt de sprites afhankelijk van aantal hitpoints
-     */
     public void swapSprite() {
         if (hitPoints == 3) {
             setSprite(sprite3);

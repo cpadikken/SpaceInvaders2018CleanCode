@@ -5,13 +5,7 @@ package nl.han.ica.SpaceInvaders2018;
  */
 public class Level {
     
-	/**
-     * Levelnummer (1 tot 10)
-     */
-	private int levelNumber;
-	/**
-	 * Startpositie van de aliens
-	 */
+	private int levelNumber; // Levelnummer (1 tot 10)
     private int startPositionAliens;
 
     /**
@@ -24,18 +18,10 @@ public class Level {
         this.startPositionAliens = startPositionAliens;
     }
 
-    /**
-     * Geeft het levelnummer
-     * @return		levelnummer
-     */
     public int getLevelNumber() {
         return levelNumber;
     }
 
-    /**
-     * Geeft de statpositie van de aliens
-     * @return		startpositie
-     */
     public int getStartPositionAliens() {
         return startPositionAliens;
     }

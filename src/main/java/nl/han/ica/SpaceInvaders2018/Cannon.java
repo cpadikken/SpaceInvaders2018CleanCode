@@ -13,13 +13,8 @@ import nl.han.ica.OOPDProcessingEngineHAN.Sound.Sound;
  * Het kanon (de speler)
  */
 public class Cannon extends AttackCapableGameObject implements ICollidableWithGameObjects, IAlarmListener {
-    /**
-     * Geluid van het schieten
-     */
+
     private Sound shootSound;
-    /**
-     * Geluid van de explosie
-     */
     private Sound explosion;
 
     /**
@@ -41,7 +36,7 @@ public class Cannon extends AttackCapableGameObject implements ICollidableWithGa
      */
     @Override
     public void update() {
-        cleanUpProjectiles();
+        cleanUpOutOfBoundsProjectiles();
         if (getX() <= 290) {
             setxSpeed(0);
             setX(290);
@@ -98,19 +93,27 @@ public class Cannon extends AttackCapableGameObject implements ICollidableWithGa
         for (GameObject g : collidedGameObjects) {
             if (g instanceof Projectile) {
                 Projectile p = (Projectile) g;
-                AttackCapableGameObject k = p.getSource();
-                k.removeProjectile(p);
-                explosion.cue(140);
-                explosion.play();
-                world.decreaseLives();
-                if (world.getLives() > 0) {
-                    setVisible(false);
-                    world.pauseGame();
-                    newLifeAlarm();
-                } else if (world.getLives() == 0) {
-                    world.endGame();
-                }
+                handleCollisionWithProjectile(p);
             }
+        }
+    }
+    
+    private void handleCollisionWithProjectile(Projectile p) {
+    	AttackCapableGameObject source = p.getSource();
+        source.removeProjectile(p);
+        explosion.cue(140);
+        explosion.play();
+        world.decreaseLives();
+        checkLivesAndDetermineIfGameContinues();
+    }
+    
+    private void checkLivesAndDetermineIfGameContinues() {
+    	if (world.getLives() > 0) {
+            setVisible(false);
+            world.pauseGame();
+            newLifeAlarm();
+        } else if (world.getLives() == 0) {
+            world.endGame();
         }
     }
 

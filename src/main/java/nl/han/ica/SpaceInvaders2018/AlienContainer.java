@@ -9,34 +9,15 @@ import java.util.Random;
  * De container waarin de aliens zitten, zodat deze synchroon bewegen
  */
 public class AlienContainer extends Alien {
-    /**
-     * Referentie naar de hoofdmodule
-     */
+
 	private SpaceInvaders world;
-    /**
-     * Beweegrichting van de aliens
-     */
     private int direction = 90;
-    /**
-     * ArrayList met daarin Aliens
-     */
-    private ArrayList<Alien> aliens;
-    /**
-     * Totaal aantal vijandelijke projectielen op het hele scherm
-     */
-    private int allHostileProjectiles;
-    /**
-     * Maximaal aantal vijandelijke projectielen op het hele scherm
-     */
-    private int maxHostileProjectiles = 3;
-    /**
-     * Beweegsnelheid van de aliens
-     */
     private float speed;
-    /**
-     * Aantal vernietigde aliens
-     */
-    private int destroyed, nTotalAliens = 0;
+    private ArrayList<Alien> aliens;
+    private int numberOfHostileProjectilesInView;
+    private int maxHostileProjectilesInView = 3;
+    private int nTotalDestroyedAliens, nTotalAliens = 0;
+    private int rateOfFire = 200;  // a higher number means a slower rate of fire
 
     /**
      * Constructor
@@ -54,48 +35,33 @@ public class AlienContainer extends Alien {
         setVisible(false);
         this.world = world;
         this.aliens = new ArrayList<>();
-        this.allHostileProjectiles = 0;
+        this.numberOfHostileProjectilesInView = 0;
         this.speed = 0.7f;
         this.nTotalAliens = nSmall + nMedium + nLarge;
         this.generateAliens(nSmall, nMedium, nLarge);
     }
 
-    /**
-     * Voegt een alien toe aan de container
-     * @param alien		alien
-     */
     public void add(Alien alien) {
         aliens.add(alien);
         world.addGameObject(alien);
     }
 
-    /**
-     * Verwijdert een alien uit de container
-     * @param alien		alien
-     */
     public void destroy(Alien alien) {
         aliens.remove(alien);
         world.deleteGameObject(alien);
     }
 
-    /**
-     * Verwijdert alle aliens die voor het attribuut 'hit' de waarde 'true' hebben
-     */
-    public void cleanUpAliens() {
+    public void cleanUpAllHitAliens() {
         for (int i = aliens.size() - 1; i >= 0; i--) {
             Alien a = aliens.get(i);
-            if (a.getHit()) {
-                world.increaseScore(a.getValue());
+            if (a.getIsHit()) {
+                world.increaseScore(a.getValueIfHit());
                 destroy(a);
             }
         }
     }
 
-    /**
-     * Telt hoeveel vijandelijke projectielen er in totaal op het scherm zijn, door alle aliens in de container na te lopen
-     * @return 			  	alle vijandelijke projectielen op het scherm
-     */
-    public int giveAllHostileProjectiles() {
+    public int giveAllHostileProjectilesOnScreen() {
         int number = 0;
         for (Alien a : aliens) {
             number += a.getTotalHostileProjectiles();
@@ -103,26 +69,35 @@ public class AlienContainer extends Alien {
         return number;
     }
 
-    /**
-     * Laat de aliens terugschieten op de speler, mits er aan een aantal condities wordt voldaan
-     */
     public void fireBack() {
-        if (aliens.size() > 0) {
-            allHostileProjectiles = giveAllHostileProjectiles();
-            if (allHostileProjectiles < maxHostileProjectiles) {
+    	if (conditionsToFireBackAreMet()) {
+    		determineRandomAttackingAlien().fire();
+    	}
+    }
+    
+    private boolean conditionsToFireBackAreMet() {
+    	boolean fireBack = false;
+    	if (aliens.size() > 0) {
+            if (giveAllHostileProjectilesOnScreen() < maxHostileProjectilesInView) {
                 Random rand = new Random();
-                int fire = rand.nextInt(200);
-                if (fire <= 1) {
-                    int alien = rand.nextInt(aliens.size());
-                    Alien attackingAlien = aliens.get(alien);
-                    attackingAlien.fire();
+                int chanceToFire = rand.nextInt(rateOfFire);
+                if (chanceToFire <= 1) {
+                	fireBack = true;
                 }
             }
-        }
+    	}
+    	return fireBack;
     }
 
+    private Alien determineRandomAttackingAlien() {
+    	Random rand = new Random();
+    	int randomSurvivingAlien = rand.nextInt(aliens.size());
+        return aliens.get(randomSurvivingAlien);
+    }
+    
     /**
-     * Bepaalt de beweegrichting en -snelheid van de aliens, of ze schieten, en of de aliens opnieuw moeten worden getekend omdat de speler ze allemaal heeft neergeschoten
+     * Bepaalt de beweegrichting en -snelheid van de aliens, of ze schieten, en of de aliens opnieuw moeten worden getekend omdat de speler ze 
+     * allemaal heeft neergeschoten
      */
     @Override
     public void update() {
@@ -137,10 +112,10 @@ public class AlienContainer extends Alien {
             }
         }
         // Boundaries
-        if (direction == 90 && calculateRight() >= (world.width + world.getPlayfieldWidth())/2) {
+        if (direction == 90 && calculateXPosOuterRightAlien() >= (world.width + world.getPlayfieldWidth())/2) {
             direction = 270;
             dropToRowBelow();
-        } else if (direction == 270 && calculateLeft() <= (world.width - world.getPlayfieldWidth())/2) {
+        } else if (direction == 270 && calculateXPosOuterLeftAlien() <= (world.width - world.getPlayfieldWidth())/2) {
             direction = 90;
             dropToRowBelow();
         }
@@ -149,18 +124,17 @@ public class AlienContainer extends Alien {
             alien.setDirectionSpeed(direction, speed);
         }
 
-        cleanUpAliens();
-
-        // No aliens left, increase level
-        if (aliens.size() == 0) {
+        cleanUpAllHitAliens();
+        resetFieldIfNoAliensLeft();   
+    }
+    
+    private void resetFieldIfNoAliensLeft() {
+    	if (aliens.size() == 0) {
             world.increaseLevel();
             world.deleteGameObject(this);
         }
     }
 
-    /**
-     * De hele groep een rij naar beneden laten bewegen
-     */
     @Override
     protected void dropToRowBelow() {
         for (int i = aliens.size() - 1; i >= 0; i--) {
@@ -168,11 +142,7 @@ public class AlienContainer extends Alien {
         }
     }
 
-    /**
-     * Berekent de x-positie van de meest rechtse alien
-     * @return				meest rechtse x-positie
-     */
-    private int calculateRight() {
+    private int calculateXPosOuterRightAlien() {
         float right = 0;
         for (Alien alien : aliens) {
             if (alien.getX() + alien.getWidth() > right) right = alien.getX() + alien.getWidth();
@@ -180,11 +150,7 @@ public class AlienContainer extends Alien {
         return Math.round(right);
     }
 
-    /**
-     * Berekent de x-positie van de meest linkse alien
-     * @return				meest linkse x-positie
-     */
-    private int calculateLeft() {
+    private int calculateXPosOuterLeftAlien() {
         float left = world.width;
         for (Alien alien : aliens) {
             if (alien.getX() < left) left = alien.getX();
@@ -197,9 +163,9 @@ public class AlienContainer extends Alien {
      */
     private void updateCurrentGroupSpeed() {
         int destroyedAliens = nTotalAliens - aliens.size();
-        if (this.destroyed != destroyedAliens) {
+        if (this.nTotalDestroyedAliens != destroyedAliens) {
             speed *= 1.025f;
-            this.destroyed = destroyedAliens;
+            this.nTotalDestroyedAliens = destroyedAliens;
         }
     }
 
@@ -210,7 +176,7 @@ public class AlienContainer extends Alien {
      * @param nLargeAliens	aantal grote aliens
      */
     private void generateAliens(int nSmallAliens, int nMediumAliens, int nLargeAliens) {
-        int columns = 11;
+    	int columns = 11;
         int row = 0;
         int margeX = 35;
         int margeY = 35;

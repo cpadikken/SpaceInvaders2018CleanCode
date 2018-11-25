@@ -16,17 +16,9 @@ import processing.core.PVector;
  */
 public abstract class Alien extends AttackCapableGameObject implements ICollidableWithGameObjects, ICollidableWithTiles {
 	
-	/**
-	 * De waarde van de alien, die toegevoegd wordt aan de score als de speler hem raakt
-	 */
-	protected int value = 0;
-	/**
-	 * Geeft aan of de alien is geraakt
-	 */
-	protected boolean hit;
-	/**
-	 * Geluid wat de alien maakt als hij geraakt wordt
-	 */
+
+	protected int valueIfHit = 0;
+	protected boolean isHit;
 	protected Sound alienKilled;
 
     /**
@@ -42,7 +34,7 @@ public abstract class Alien extends AttackCapableGameObject implements ICollidab
      */
     public Alien(Sprite sprite, int totalFrames, float x, float y, int sWidth, int sHeight, SpaceInvaders world, Sound alienKilled) {
         super(sprite, totalFrames, x, y, sWidth, sHeight, world);
-        this.hit = false;
+        this.isHit = false;
         this.alienKilled = alienKilled;
     }
 
@@ -52,15 +44,11 @@ public abstract class Alien extends AttackCapableGameObject implements ICollidab
     @Override
     public void update() {
         nextFrame();
-        cleanUpProjectiles();
+        cleanUpOutOfBoundsProjectiles();
     }
     
-    /**
-     * Geeft de waarde van de alien, die toegevoegd wordt aan de score als de speler hem raakt
-     * @return		waarde
-     */
-    public int getValue() {
-    	return value;
+    public int getValueIfHit() {
+    	return valueIfHit;
     }
     
     /**
@@ -71,44 +59,37 @@ public abstract class Alien extends AttackCapableGameObject implements ICollidab
         for (GameObject g:collidedGameObjects) {
             if (g instanceof Projectile) {
             	Projectile p = (Projectile) g;
-            	if(p.getFriendly()) {
+            	if(p.getIsFriendly()) {
             		alienKilled.cue(140);
             		alienKilled.play();
             		AttackCapableGameObject k = p.getSource();
             		k.removeProjectile(p);
                     explode();
-	            	hit = true;
+	            	isHit = true;
             	}
             }
         }
     }
     
-    /**
-     * Geeft aan of de alien is geraakt door een projectiel
-     * @return		is de alien geraakt, true of false
-     */
-    public boolean getHit() {
-    	return hit;
+    public boolean getIsHit() {
+    	return isHit;
     }
     
     /**
-     * Bepaalt welk type projectiel door de alien wordt afgevuurd
+     * Bepaalt welk type projectiel door de alien wordt afgevuurd, en genereert deze
      */
     public void fire() {
         Random rand = new Random();
-        int type = rand.nextInt(100);
-        if (type > 50 && type < 80) {
+        int typeOfProjectile = rand.nextInt(100);
+        if (typeOfProjectile > 50 && typeOfProjectile < 80) {
             generatePlasma();
-        } else if (type >= 80) {
+        } else if (typeOfProjectile >= 80) {
             generateProton();
         } else {
             generateLaser(false);
         }
     }
     
-    /**
-     * Verplaatst de alien een rij naar beneden
-     */
     protected void dropToRowBelow() {
     	setY(getY() + getHeight());
     }

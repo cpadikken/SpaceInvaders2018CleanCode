@@ -9,15 +9,9 @@ import nl.han.ica.OOPDProcessingEngineHAN.Objects.TextObject;
  */
 public class BonusPointsText extends TextObject implements IAlarmListener {
 	
-	/**
-	 * Referentie naar de hoofdmodule
-	 */
+
 	private SpaceInvaders world;
-	
-	/**
-	 * Hoeveel seconden het object blijft bestaan
-	 */
-	private int lifespan;
+	private int lifespan; // Hoeveel seconden het object blijft bestaan
 
 	/**
 	 * Constructor
@@ -57,13 +51,8 @@ public class BonusPointsText extends TextObject implements IAlarmListener {
         alarm.start();
     }
 
-	/**
-	 * Verwijdert dit object
-	 */
 	@Override
 	public void triggerAlarm(String alarmName) {
 		world.deleteGameObject(this);
 	}
-
-	
 }

@@ -43,9 +43,8 @@ public abstract class AttackCapableGameObject extends DestroyableGameObject {
     }
 
     /**
-     * Voegt een projectiel van de subklasse Plasma toe aan de ArrayList
-     * <p>
-     * De speler kan alleen maar Lasers afvuren, dus is het hier niet nodig om te controleren of het projectiel Friendly is
+     * Voegt een projectiel van de subklasse Plasma toe aan de ArrayList. De speler kan alleen maar Lasers afvuren, dus is het hier niet 
+     * nodig om te controleren of het projectiel Friendly is
      */
     public void generatePlasma() {
         Plasma plasma = new Plasma(world,this);
@@ -53,9 +52,8 @@ public abstract class AttackCapableGameObject extends DestroyableGameObject {
     }
 
     /**
-     * Voegt een projectiel van de subklasse Proton toe aan de ArrayList
-     * <p>
-     * De speler kan alleen maar Lasers afvuren, dus is het hier niet nodig om te controleren of het projectiel Friendly is
+     * Voegt een projectiel van de subklasse Proton toe aan de ArrayList. De speler kan alleen maar Lasers afvuren, dus is het hier niet 
+     * nodig om te controleren of het projectiel Friendly is
      */
     public void generateProton() {
         Proton proton = new Proton(world,this);
@@ -67,49 +65,30 @@ public abstract class AttackCapableGameObject extends DestroyableGameObject {
         world.addGameObject(p, getX() + (getWidth()/2), y);
     }
 
-    /**
-     * Haalt het aantal projectielen uit de ArrayList op
-     * @return		aantal projectielen
-     */
     public int getTotalProjectiles() {
         return projectiles.size();
     }
 
-    /**
-     * Haalt het aantal projectielen uit de ArrayList op, met de waarde Friendly
-     * @return		aantal projectielen met de waarde Friendly
-     */
     public int getTotalFriendlyProjectiles() {
         int number = 0;
         for (Projectile p : projectiles) {
-            if (p.friendly) {
+            if (p.isFriendly) {
                 number++;
             }
         }
         return number;
     }
 
-    /**
-     * Haalt het aantal projectielen uit de ArrayList op, met de waarde !Friendly
-     * @return		aantal projectielen met de waarde !Friendly
-     */
     public int getTotalHostileProjectiles() {
         return getTotalProjectiles() - getTotalFriendlyProjectiles();
     }
 
-    /**
-     * Verwijdert een projectiel uit de ArrayList
-     * @param p		projectiel
-     */
     public void removeProjectile (Projectile p) {
         projectiles.remove(p);
         world.deleteGameObject(p);
     }
-
-    /**
-     * Verwijdert de projectielen die uit het beeld zijn uit de ArrayList
-     */
-    public void cleanUpProjectiles() {
+    
+    public void cleanUpOutOfBoundsProjectiles() {
         for (int i = projectiles.size()-1; i >=0; i--) {
             Projectile p = projectiles.get(i);
             if (p.getOutOfBounds()) {
